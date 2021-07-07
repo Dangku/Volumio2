@@ -88,7 +88,12 @@ function CoreVolumeController (commandRouter) {
     });
   };
 
-  var reInfo = /[a-z][a-z ]*: Playback [0-9-]+ \[([0-9]+)%\] (?:[[0-9.-]+dB\] )?\[(on|off)\]/i;
+  if (devicename === 'HDMI Audio') {
+      //dangku, fix hdmi no sound.
+      var reInfo = /[a-z][a-z ]*: Playback \[(on|off)\]/i;
+  } else {
+      var reInfo = /[a-z][a-z ]*: Playback [0-9-]+ \[([0-9]+)%\] (?:[[0-9.-]+dB\] )?\[(on|off)\]/i;
+  }
   var reInfoOnlyVol = /[a-z][a-z ]*: Playback [0-9-]+ \[([0-9]+)%\] (?:[[0-9.-]+dB\] )?\[/i;
   var getInfo = function (cb) {
     if (volumescript.enabled) {
@@ -216,12 +221,28 @@ function CoreVolumeController (commandRouter) {
             }
           });
         }
+	//dangku, fix hdmi mute/unmute reverse
+	if (devicename === 'HDMI Audio') {
+          amixer(['-M', 'set', '-c', device, mixer, 'off', val + '%'], function (err) {
+            if (err) {
+              self.logger.error('Cannot set ALSA Volume: ' + err);
+            }
+          });
+        }
       } else {
         amixer(['set', '-c', device, mixer, 'unmute', val + '%'], function (err) {
           cb(err);
         });
         if (devicename === 'PianoDACPlus' || devicename === 'Allo Piano 2.1' || devicename === 'PianoDACPlus multicodec-0') {
           amixer(['set', '-c', device, 'Subwoofer', 'unmute', val + '%'], function (err) {
+            if (err) {
+              self.logger.error('Cannot set ALSA Volume: ' + err);
+            }
+          });
+        }
+	//dangku, fix hdmi mute/unmute reverse
+	if (devicename === 'HDMI Audio') {
+          amixer(['set', '-c', device, mixer, 'off', val + '%'], function (err) {
             if (err) {
               self.logger.error('Cannot set ALSA Volume: ' + err);
             }
@@ -246,6 +267,14 @@ function CoreVolumeController (commandRouter) {
       amixer(['set', '-c', device, mixer, (val ? 'mute' : 'unmute')], function (err) {
         cb(err);
       });
+      //dangku, fix hdmi mute/unmute reverse
+      if (devicename === 'HDMI Audio') {
+          amixer(['set', '-c', device, mixer, (val ? 'on' : 'off')], function (err) {
+            if (err) {
+              self.logger.error('Cannot set ALSA Volume: ' + err);
+            }
+          });
+       }
     } else {
       amixer(['set', '-c', device, mixer, (val ? 0 : premutevolume)], function (err) {
         cb(err);

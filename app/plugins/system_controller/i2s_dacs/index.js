@@ -188,14 +188,7 @@ ControllerI2s.prototype.i2cDetect = function () {
 
   var i2cbus;
   var defer = libQ.defer();
-  exec("echo `awk '{if ($1==\"Revision\") print substr($3,length($3)-3)}' /proc/cpuinfo`", function (err, stdout, stderr) {
-    var revision = stdout.slice(0, 4);
-    if ((!err) && (revision != '0002') && (revision != '0003')) {
-      readI2S('1');
-    } else {
-      readI2S('0');
-    }
-  });
+  readI2S('0');
 
   function readI2S (i2cbus) {
     try {

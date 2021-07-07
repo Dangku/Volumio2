@@ -1036,6 +1036,7 @@ ControllerAlsa.prototype.setDefaultMixer = function (device) {
     var devnum = device.toString();
     if (devnum == cards[i].id) {
       currentcardname = cards[i].name;
+      this.config.addConfigValue('cardname', 'string', currentcardname);
     }
   }
 
@@ -1370,6 +1371,9 @@ ControllerAlsa.prototype.updateVolumeSettings = function () {
   if (valdevice != 'softvolume') {
     if (cards[valdevice] != undefined) {
       var outdevicename = cards[valdevice].name;
+    } else {
+      //dangku, fix devicename missing in volumecontrol.js
+      var outdevicename = self.config.get('cardname');
     }
   } else {
     var outdevicename = 'softvolume';
@@ -1416,6 +1420,7 @@ ControllerAlsa.prototype.updateVolumeSettings = function () {
     }
   }
 
+  self.logger.info('ControllerAlsa.prototype.updateVolumeSettings, cardname ' + settings.name + 'mixer ' + settings.mixer);
   return self.commandRouter.volumioUpdateVolumeSettings(settings);
 };
 
